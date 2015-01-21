@@ -1,0 +1,39 @@
+# Packaging
+*.py[cod]
+*.egg-info
+/dist/
+/build/
+
+# Vagrant
+.vagrant
+
+# Temporary/OS files
+*.swp
+*.swo
+*.*~
+.~lock.*
+*.DS_Store
+
+# IDE files
+.project
+.pydevproject
+.settings
+.idea
+
+# Docs
+/docs/build/*
+*.pdf
+TODO
+
+# Test files
+.coverage
+.noseids
+coverage.xml
+violations.txt
+nosetests.xml
+/htmlcov/*
+/.tox/*
+
+# Example sites
+settings_local.py
+
