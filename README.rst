@@ -2,34 +2,51 @@
 django-kladr-api
 =============================
 
-.. image:: https://badge.fury.io/py/django-kladr-api.png
-    :target: https://badge.fury.io/py/django-kladr-api
+Some django stuff for kladr-api.ru (Russian address database Cloud API).
+Contains jQuery plugin by @garakh 
+(https://github.com/garakh/kladrapi-jsclient/blob/master/jquery.kladr.min.js)
 
-.. image:: https://travis-ci.org/okfish/django-kladr-api.png?branch=master
-    :target: https://travis-ci.org/okfish/django-kladr-api
-
-.. image:: https://coveralls.io/repos/okfish/django-kladr-api/badge.png?branch=master
-    :target: https://coveralls.io/r/okfish/django-kladr-api?branch=master
-
-Some django stuff for kladr-api.ru (Russian address database Cloud API)
 
 Documentation
 -------------
 
-The full documentation is at https://django-kladr-api.readthedocs.org.
+Coming soon...
+
+
+.. See kladr-api documentation
+    :target: https://kladr-api.ru/integration/
 
 Quickstart
 ----------
 
 Install django-kladr-api::
 
-    pip install django-kladr-api
+    pip install -e git+https://github.com/okfish/django-kladr-api.git#egg=django-kladr-api
 
 Then use it in a project::
 
-    import django-kladr-api
+	(Optional)
+	#settings.py 
+	INSTALLED_APPS = [
+		...
+		'kladr_api',
+    ]
+    
+    #forms.py
+    from django.forms import fields
+    from kladr_api.widgets import KladrRegionWidget
+    ...
+    region = fields.CharField( widget=KladrRegionWidget() )
+    
+Do not forget to collectstatic if your use it.
+    
+    TODO
 
 Features
 --------
+* Widgets: it is the first attempt and only Javascript widgets available at the moment
 
-* TODO
+* TODO: 
+	* tests-tests-test
+	* validation on the client and on the server sides, so
+	* fields and forms
