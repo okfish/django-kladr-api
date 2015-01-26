@@ -3,7 +3,7 @@ from django import forms
 from django.utils.html import conditional_escape, format_html
 from django.utils.safestring import mark_safe
 
-from . import KLADR_API_URL, KLADR_API_TOKEN
+from .settings import KLADR_API_URL, KLADR_API_TOKEN
 
 class KladrWidget(forms.TextInput):
     """
