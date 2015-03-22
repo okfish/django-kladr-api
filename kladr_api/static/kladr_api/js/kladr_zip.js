@@ -1,0 +1,1 @@
+/home/fish/projects/AptanaWorkspace/kladrapi-jsclient/kladr/js/kladr_zip.js
