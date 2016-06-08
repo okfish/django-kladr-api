@@ -1,9 +1,9 @@
 import json
 from django import forms
-from django.utils.html import conditional_escape, format_html
 from django.utils.safestring import mark_safe
 
 from .settings import KLADR_API_URL, KLADR_API_TOKEN
+
 
 class KladrWidget(forms.TextInput):
     """
@@ -16,8 +16,8 @@ class KladrWidget(forms.TextInput):
     jscode = ''
     widget_type = None 
     options = {
-        'url' : KLADR_API_URL,
-        'token' : KLADR_API_TOKEN,
+        'url': KLADR_API_URL,
+        'token': KLADR_API_TOKEN,
     }
  
     def start_jscript(self, id=None):
@@ -33,12 +33,12 @@ class KladrWidget(forms.TextInput):
     
     def get_options(self):
         """
-        Subclass to add/modify options or drop unneccessary.
-        
+        Subclass to add/modify options or drop unnecessary.
         :return: Dictionary of options to be passed to $('input').kladr plugin
         :rtype: :py:obj:`dict`
         """
-        options = dict(self.options)
+        options = {}
+        options.update(self.options)
         if self.widget_type:
             options['type'] = self.widget_type
         return options
@@ -56,12 +56,10 @@ class KladrWidget(forms.TextInput):
             parent_id_ = attrs.get('parent_id', None)
             
             if parent_id_:
-                #options['verify'] = True
                 options['parentId'] = parent_id_
                 if self.widget_type == 'street':
                     options['parentType'] = 'city'
                 elif self.widget_type == 'city':
-                    #options['parentType'] = 'region'
                     options['verify'] = True
                     options.pop('parentId')
                 elif self.widget_type == 'building':
@@ -76,17 +74,17 @@ class KladrWidget(forms.TextInput):
         return mark_safe(s)
 
     class Media:
-        js = (#'kladr_api/js/jquery.kladr.min.js',
-              'kladr_api/js/core.js', #switched to dev-branch
+        js = ('kladr_api/js/core.js',  # switched to dev-branch
               'kladr_api/js/kladr.js',
-               'kladr_api/js/common.js',
+              'kladr_api/js/common.js',
               )
         css = {
                'all': ('kladr_api/css/jquery.kladr.min.css',
                        'kladr_api/css/kladr_api.css',
                        )
                }
-        
+
+
 class KladrRegionWidget(KladrWidget):
     """
     Russian region select input.
@@ -107,6 +105,7 @@ class KladrRegionWidget(KladrWidget):
         options['verify'] = True
         return options
 
+
 class KladrCityWidget(KladrWidget):
     """
     Russian city select input.
@@ -115,6 +114,7 @@ class KladrCityWidget(KladrWidget):
     """
     widget_type = 'city'
 
+
 class KladrStreetWidget(KladrWidget):
     """
     Russian streets select input.
@@ -122,6 +122,7 @@ class KladrStreetWidget(KladrWidget):
     Uses Kladr-api.ru JQuery plugin for suggestions.
     """
     widget_type = 'street'
+
 
 class KladrBuildingWidget(KladrWidget):
     """
@@ -135,7 +136,8 @@ class KladrBuildingWidget(KladrWidget):
         options = super(KladrBuildingWidget, self).get_options()
         options['verify'] = False
         return options
-    
+
+
 class KladrPostcodeWidget(KladrWidget):
     """
     Russian postcode select input. On change event will try to

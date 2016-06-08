@@ -1,4 +1,5 @@
 var $kladr_form_vals = {},
+    $value_separator = '. ',
 	$DEBUG = false;
 
 function log_message(msg){
@@ -6,7 +7,6 @@ function log_message(msg){
 		console.log(msg);
 	}
 }
-
 
 function format_value (obj, query) {
 	var objs;
@@ -22,9 +22,14 @@ function format_value (obj, query) {
 		return (obj.typeShort ? obj.typeShort + '. ' : '') + obj.name;
 	}
 	if (obj) {
-		//log_message('...formatted value:' + obj.name);
+		log_message('...formatted value:' + obj.name);
 	}
-	return obj.name || obj;
+	return (obj.typeShort ? obj.typeShort + $value_separator : '') + ( obj.name || obj);
+}
+
+function unformat_value (val) {
+    // looks ugly but clearly
+    return val.split($value_separator).slice(1).join($value_separator) || val
 }
 
 function format_label (obj, query) {
@@ -59,35 +64,34 @@ function format_label (obj, query) {
 	}
 
 	return label;
-}; 
+}
 
 function setLabel($input, text) {
 	if (text) {
 		text = text.charAt(0).toUpperCase() + text.substr(1).toLowerCase();
 		$input.parent().parent().find('label').text(text);
 	}
-};
+}
 
 function showError($input, message) {
-	$parent = $input.parents("form");
-	$tooltip = $parent.find('.form-tooltip');
-	$tooltip.find('span').text(message);
+	var $parent = $input.parents("form");
+	var $tooltip = $parent.find('.form-tooltip');
+
+    $tooltip.find('span').text(message);
 
 	var inputOffset = $input.offset(),
 		parentOffset = $parent.offset(),
 		inputWidth = $input.outerWidth(),
-		inputHeight = $input.outerHeight();
-
-	var tooltipHeight = $tooltip.outerHeight();
-	l = (inputOffset.left - parentOffset.left + inputWidth - 10);
-	t = (inputOffset.top - parentOffset.top + (inputHeight - tooltipHeight) / 2 - 1);
+		inputHeight = $input.outerHeight(),
+	    tooltipHeight = $tooltip.outerHeight(),
+	    l = (inputOffset.left - parentOffset.left + inputWidth - 10),
+	    t = (inputOffset.top - parentOffset.top + (inputHeight - tooltipHeight) / 2 - 1);
 	$tooltip.css({
 		left: l + 'px',
 		top: t + 'px'
 	});
-
 	$tooltip.show();
-};
+}
 
 function getRegionName ( obj ) {
 	var result = '';
@@ -104,12 +108,10 @@ function getRegionName ( obj ) {
 }
 
 function formUpdate($input) {
-	var $result = null, $region = '';
-	$parent = $input.parents("form");
+	var $parent = $input.parents("form");
 	log_message('Updating form...');
-	$result = $.kladr.getAddress($parent, function (objs) {
+	var $result = $.kladr.getAddress($parent, function (objs) {
 		var result = false,
-			reg_field = null,
 			zip = '';
 			$.each(objs, function (i, obj) {
 				var name = '',
@@ -128,8 +130,6 @@ function formUpdate($input) {
 		var $reg_input = $parent.find('[data-kladr-type="region"]');
 		//log_message('...result region: ' + $result['region'].name); 
 		$reg_input.kladr('controller').setValue($result['region']);
-		//setLabel($reg_input, $result['region'].type);
-		
 	}
 	if ($result['zip']) {
 		var $zip_input = $parent.find('[data-kladr-type="zip"]'); 
@@ -141,11 +141,9 @@ function formUpdate($input) {
 }
 
 function clearKladrInput($parent,$type) {
-	$inp = $parent.find('[data-kladr-type="'+$type+'"]');
+	var $inp = $parent.find('[data-kladr-type="'+$type+'"]');
 	log_message('...found input:'+$inp.val());
 	if ($inp.size()>0) {
-		//$inp.off('kladr_change');
-		
 		if ($inp.attr('data-kladr-id')) {
 			log_message('...deleting kladr value:'+$inp.attr('data-kladr-id'));
 			$inp.kladr('controller').clear();
@@ -157,13 +155,13 @@ function clearKladrInput($parent,$type) {
 
 function initKladrForm($parent){
 
-	log_message('Init form:' + $parent.attr('action'));
+	log_message('Init form started:' + $parent.attr('action'));
 	var old_vals = {},
 		field = null,
 		objs = $parent.find('[data-kladr-type]');
 	objs.each(function (i) {
-		inp = $(this);
-		inp_type = inp.data('kladr-type');
+		var inp = $(this);
+		var inp_type = inp.data('kladr-type');
 		inp.kladr({parentInput : $parent,
 				   valueFormat : format_value,
 	               labelFormat : format_label, 
@@ -175,15 +173,16 @@ function initKladrForm($parent){
 	               sendBefore : on_before_send,
 	               withParents : true });
 		
-		log_message('...field:' +i+'-' + inp_type); 
-		old_vals[inp_type] = inp.val();
-		
-		opts = inp.data('kladr-options');
+		log_message('...field:' +i+'-' + inp_type + '; parent: ' + $parent.attr('action'));
+		old_vals[inp_type] = unformat_value(inp.val());
+		log_message('...unformatted value:' + old_vals[inp_type]);
+		var opts = inp.data('kladr-options');
+        log_message('...kladr-options:' + opts.parentId + ' ' + opts.parentType);
 		inp.removeAttr('data-kladr-options');
 		inp.kladr(opts); 
 	});
 	$kladr_form_vals = old_vals;
-	log_message('Init form:' + $parent.action);
+	log_message('Set form values:' + $parent.attr('action'));
 	$.kladr.setValues(old_vals, $parent);
 }
 
@@ -199,7 +198,7 @@ function on_check (obj) {
 	else {
 		showError($input, 'Введено неверно');
 	}
-};
+}
 
 function on_select (obj) {
 	
@@ -208,15 +207,14 @@ function on_select (obj) {
 	var $tooltip = $form.find('.form-tooltip');
 	setLabel($input, obj.type);
 	$tooltip.hide();
-};
+}
 
 function on_change (obj) {
 	
 	var $input = $(this),
-		$parent = $input.parents("form");
-	
-	$inp_type = $input.attr('data-kladr-type');
-	$inp_code = $input.attr('data-kladr-id');
+		$parent = $input.parents("form"),
+    	$inp_type = $input.attr('data-kladr-type'),
+	    $inp_code = $input.attr('data-kladr-id');
 	log_message('Changing region by ' + $inp_type +':'+ $inp_code);
 	if (obj) {
 		setLabel($input, obj.type);
@@ -234,17 +232,17 @@ function on_change (obj) {
 		clearKladrInput($parent,'building');
 	}
 	if ($inp_type !== 'zip') {
-		
-		$inp = $parent.find('[data-kladr-type="zip"]');
+		var $inp = $parent.find('[data-kladr-type="zip"]');
 		log_message('... clear zip:' + $inp.attr('name'));
 		$inp.val('');
 	}
 	formUpdate($input);
 }
+
 function on_before_open ( ) {
-	$input = $(this);
-	$parent = $input.parents("form");
-	$inp_type = $input.attr('data-kladr-type');
+	var $input = $(this),
+	    $parent = $input.parents("form"),
+	    $inp_type = $input.attr('data-kladr-type');
 	log_message('Selecting by:' + $inp_type);
 	if ($inp_type == 'city') {
 			log_message('... clear region');
@@ -269,13 +267,13 @@ function on_receive () {
 }
 
 $(document).ready(function() {
-	var $kladr_form = '', $inp = '';
-	$inp = $(document).find(':input[data-kladr-type="city"]');
+
+	var $inp = $(document).find(':input[data-kladr-type="city"]');
 	log_message('Found Kladr field...'+ $inp.val());
-	$kladr_form = $inp.parents("form");
+	var $kladr_form = $inp.parents("form");
 	
 	if ($kladr_form.size()>0) {
-		log_message('Found Kladr form...' + $kladr_form.action);
+		log_message('Found Kladr form...' + $kladr_form.attr('action'));
 		initKladrForm($kladr_form);
 	}
 	// drop 'disabled' attr before submitting
@@ -292,5 +290,4 @@ $(document).ready(function() {
 	    	return false;
   		}
 	});
-	
 });
